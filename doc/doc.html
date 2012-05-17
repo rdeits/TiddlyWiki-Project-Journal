@@ -563,8 +563,8 @@ Error: #f88
 
 </pre>
 </div>
-<div title="DefaultTiddlers" modifier="RobinDeits" created="201012042255" modified="201012042255" changecount="2">
-<pre>[[journal]]</pre>
+<div title="DefaultTiddlers" modifier="RobinDeits" created="201012042255" modified="201205020027" changecount="4">
+<pre>[[Status]] [[journal]] SiteTitle SiteSubtitle DefaultTiddlers</pre>
 </div>
 <div title="ExtendTagButtonPlugin" modifier="MPTW" created="201004041418" modified="201009151231" tags="systemConfig">
 <pre>/***
@@ -830,7 +830,7 @@ Note: Some hosting providers, such as http://www.TiddlySpot.com/ offer ''&quot;p
 2007.11.25 1.0.0 initial release - moved from CoreTweaks
 &lt;&lt;&lt;</pre>
 </div>
-<div title="FileDropPlugin" modifier="RobinDeits" created="200611080217" modified="201111031900" tags="AttachFilePackage systemConfig" server.type="file" server.host="www.tiddlytools.com/#FileDropPlugin" server.page.revision="201003081928" changecount="1">
+<div title="FileDropPlugin" modifier="RobinDeits" created="200611080217" modified="201205170219" tags="AttachFilePackage systemConfig" server.type="file" server.host="www.tiddlytools.com/#FileDropPlugin" server.page.revision="201003081928" changecount="3">
 <pre>/***
 |Name|FileDropPlugin|
 |Source|http://www.TiddlyTools.com/#FileDropPlugin|
@@ -1108,6 +1108,430 @@ config.macros.fileDrop.addEventListener('application/x-moz-file',function(nsiFil
 })
 //}}}</pre>
 </div>
+<div title="Firefox Privileges" modifier="RobinDeits" created="201012042356" modified="201205170200" changecount="3">
+<pre>&lt;&lt;firefoxPrivileges&gt;&gt;</pre>
+</div>
+<div title="FirefoxPrivilegesPlugin" modifier="XavierVerges" created="200804012144" modified="200804071720" tags="systemConfig">
+<pre>/***
+|''Name''|FirefoxPrivilegesPlugin|
+|''Description''|Create a backstage tab to manage Firefox url privileges|
+|''Author''|Xavier Vergés (xverges at gmail dot com)|
+|''Version''|1.1.1 ($Rev: 4266 $)|
+|''Date''|$Date: 2008-04-06 09:04:49 +0200 (dom, 06 abr 2008) $|
+|''Status''|@@beta@@|
+|''Source''|http://firefoxprivileges.tiddlyspot.com/|
+|''CodeRepository''|http://trac.tiddlywiki.org/browser/Trunk/contributors/XavierVerges/plugins/FirefoxPrivilegesPlugin.js|
+|''License''|BSD tbd|
+|''CoreVersion''|2.2.4 (maybe 2.2+?)|
+|''Feedback''|http://groups.google.com/group/TiddlyWiki|
+|''BookmarkletReady''|http://icanhaz.com/firefoxprivileges|
+|''Browser''|Mozilla. Tested under Firefox 2.0.0.12 and Firefox 3.0b4|
+|''Documentation''|http://firefoxprivileges.tiddlyspot.com/#HowTo|
+/%
+!Description
+!Notes
+!Usage
+!Revision History
+!!v1.0 (2008-03-23)
+* First public version
+%/
+!Usage
+The wizard can be opened from the backstage or using the macro {{{&lt;&lt;firefoxPrivileges&gt;&gt;}}}
+The step to show when opening the wizard can be set with the {{{txtPrivWizardDefaultStep}}} option: &lt;&lt;option txtPrivWizardDefaultStep&gt;&gt;
+!Code
+***/
+//{{{
+if(window.Components) {
+config.macros.firefoxPrivileges = {};
+config.macros.firefoxPrivileges.lingo = {};
+/*
+//}}}
+!!! Strings to translate
+//{{{
+*/
+merge(config.macros.firefoxPrivileges.lingo ,{
+	wizardTitle: &quot;Manage Firefox Privileges&quot;,
+	learnStepTitle: &quot;1. Learn about the risks of giving privileges to file: urls&quot;,
+	learnStepHtml: &quot;&lt;h3&gt;Local files&lt;/h3&gt;&lt;p&gt;Firefox can be configured to grant the same security privileges to every html document loaded from disk (those &lt;i&gt;file:&lt;/i&gt; urls), or to grant different privileges on a per file basis. Local TiddyWikis need some high security privileges in order to let you save changes to disk, or to import tiddlers from remote servers. Unfortunately, these same privileges can potentially be used by the bad guys to launch programs, get files from your disk and upload them somewhere, access your browsing history...&lt;/p&gt;&lt;p&gt;While it is more convenient to let Firefox give all your local files the same security privileges, and I'm not aware of any malware attack that tries to take advantage of privileged &lt;i&gt;file:&lt;/i&gt; urls, an ounce of prevention is worth a pound of cure.&lt;/p&gt;&lt;p&gt;You can learn more about this by reading &lt;a href='http://www.mozilla.org/projects/security/components/per-file.html' class='externalLink'&gt;Per-File Permissions&lt;/a&gt; and &lt;a href='http://www.mozilla.org/projects/security/components/signed-scripts.html#privs-list' class='externalLink'&gt;JavaScript Security: Signed Script&lt;/a&gt; at mozilla.org.&lt;/p&gt;&lt;h3&gt;Remote files&lt;/h3&gt;&lt;p&gt;When a remote document (&lt;i&gt;http:&lt;/i&gt; urls) requests especial privileges, Firefox &lt;ul&gt;&lt;li&gt;checks the value of &lt;code&gt;signed.applets.codebase_principal_support&lt;/code&gt;, a preference that can be configured from the page that is loaded when you type &lt;code&gt;about:config&lt;/code&gt; in the address bar&lt;/li&gt;&lt;li&gt;if the previous value is set to false, Firefox denies silently the request&lt;/li&gt;&lt;li&gt;if the previous value is set to true, Firefox looks for the document's domain in the list of privileges urls that can be configured from this wizard, and, if not there, asks the user to grant the privilege&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Note that, in this case, and unlike when dealing with local files, Firefox will only take into account the document's domain instead of performing an exact match of the url.&lt;/p&gt;&lt;p&gt;Take a look at &lt;a href='http://messfromabove.tiddlyspot.com' class='externalLink'&gt;http://messfromabove.tiddlyspot.com&lt;/a&gt; to learn more about the nice and nasty possibilities that this setting provides.&lt;/p&gt;&lt;h3&gt;This Wizard&lt;/h3&gt;&lt;p&gt;This wizard will help you to grant the required privileges to your TiddlyWikis, local or remote, and warn you if you have enabled a dangerous default. To do so, Firefox will probably prompt you to grant it some special privileges in order to list and modify the list of privileged urls.&lt;/p&gt;&lt;p&gt;Please note that changing the privileges for an url may not have effect until you reload it in the browser.&lt;/p&gt;&lt;input type='hidden' name='mark'&gt;&lt;/input&gt;&quot;,
+	learnStepButton: &quot;1. Learn about the risks&quot;,
+	learnStepButtonTooltip: &quot;Learn why 'Remember this' is an unsafe choice in security prompts&quot;,
+	grantStepTitle: &quot;2. Grant privileges to individual local documents or remote domains&quot;,
+	grantStepHtml: &quot;Url: &lt;input type='text' size=80 name='txtUrl'&gt;&lt;br/&gt;&lt;br/&gt;&lt;input type='checkbox' checked='true' name='chkUniversalXPConnect'&gt;Grant rights required to save to disk (Run or install software on your machine - UniversalXPConnect)&lt;/input&gt;&lt;br/&gt;&lt;input type='checkbox' checked='true' name='chkUniversalBrowserRead'&gt;Grant rights required to import tiddlers from servers or access TiddlySpot (Read and upload local files - UniversalBrowserRead)&lt;/input&gt;&lt;br/&gt;&lt;input type='checkbox' name='chkUniversalBrowserWrite'&gt;Modify any open window - UniversalBrowserWrite&lt;/input&gt;&lt;br/&gt;&lt;input type='checkbox' name='chkUniversalFileRead'&gt;Read and upload local files - UniversalFileRead&lt;/input&gt;&lt;br/&gt;&lt;input type='checkbox' name='chkCapabilityPreferencesAccess'&gt;By-pass core security settings - CapabilityPreferencesAccess&lt;/input&gt;&lt;br/&gt;&lt;input type='checkbox' name='chkUniversalPreferencesRead'&gt;Read program settings - UniversalPreferencesRead&lt;/input&gt;&lt;br/&gt;&lt;input type='checkbox' name='chkUniversalPreferencesWrite'&gt;Modify program settings - UniversalPreferencesWrite&lt;/input&gt;&lt;br/&gt;&lt;input type='button' class='button' name='btnGrant' value='Set privileges'/&gt;&quot;,
+	grantStepButton: &quot;2. Set privileges&quot;,
+	grantStepButtonTooltip: &quot;Manage privileges for this or other docs&quot;,
+	viewStepTitle: &quot;3. Granted privileges&quot;,
+	viewStepHtml: &quot;&lt;input type='hidden' name='mark'&gt;&lt;/input&gt;&quot;,
+	viewStepButton: &quot;3. View privileges&quot;,
+	viewStepButtonTooltip: &quot;List granted privileges, and optionally reset them&quot;,
+	viewStepEmptyMsg: &quot;Asking for temporary privileges to list permanent privileges...&quot;,
+	listViewTemplate: {
+		columns: [
+			{name: 'Selected', field: 'Selected', rowName: 'url', type: 'Selector'},
+			{name: 'Url', field: 'url', title: &quot;Url&quot;, type: 'LongLink'},
+			{name: 'Granted', field: 'granted', title: &quot;Granted&quot;, type: 'StringList'},
+			{name: 'Denied', field: 'denied', title: &quot;Denied&quot;, type: 'StringList'},
+			{name: 'Handle', field: 'handle', title: &quot;Handle&quot;, type: 'String'},
+            {name: 'Notes', field: 'notes', title: &quot;Notes&quot;, type: 'String'}
+			],
+		rowClasses: [
+			{className: 'lowlight', field: 'highlight'},
+			{className: 'error', field: 'warning'}
+			]
+		},
+	listResetButton: &quot;Reset the privileges of the selected urls&quot;,
+	noteDangerous: &quot;This is dangerous&quot;,
+	noteNoEffect: &quot;This has no effect&quot;,
+	noteThisUrl: &quot;This document's url&quot;,
+	noteTheUrlYouUpdated: &quot;The url you just updated&quot;,
+	errNoUrl: &quot;The url is required&quot;,
+	errNotAuthorized: &quot;Not enough privileges. Maybe you are trying this from a tiddlywiki loaded from a server?&quot;,
+	msgUpdating: &quot;Updating privileges for %0&quot;,
+	msgSetting: &quot;Setting privileges for %0&quot;,
+	msgResetting: &quot;Resetting privileges for %0&quot;
+});
+merge(config.optionsDesc,{
+	txtPrivWizardDefaultStep: &quot;Step to show when opening the 'Manage Firefox Privileges' wizard&quot;
+});
+merge(config.tasks,{
+	firefoxPrivileges: {text: &quot;security&quot;, tooltip: &quot;Work with Firefox url privileges&quot;, content: '&lt;&lt;firefoxPrivileges&gt;&gt;'}
+});
+/*
+//}}}
+!!! Regular code
+//{{{
+*/
+config.backstageTasks.pushUnique(&quot;firefoxPrivileges&quot;);
+if (typeof(config.options.txtPrivWizardDefaultStep) === &quot;undefined&quot;){
+	config.options.txtPrivWizardDefaultStep = &quot;1&quot;;
+}
+
+(function(){
+
+var plugin = config.macros.firefoxPrivileges;
+var lingo = plugin.lingo;
+plugin.privAccessCapabilities = &quot;UniversalXPConnect CapabilityPreferencesAccess&quot;;
+plugin.stepNames = [&quot;learn&quot;, &quot;grant&quot;, &quot;view&quot;];
+plugin.lastUrl = document.location.toString();
+
+plugin.handler = function(place,macroName,params,wikifier,paramString,tiddler)
+{
+	var wizard = new Wizard();
+	wizard.createWizard(place,lingo.wizardTitle);
+	var step = parseInt(config.options.txtPrivWizardDefaultStep);
+	step = (isNaN(step)||(step&lt;=0)||(step&gt;3))? 0 : step-1;
+	plugin.step(wizard, step);
+};
+plugin.buttons = (function(){
+	var onclick = {};
+	for (var ii=0; ii&lt;plugin.stepNames.length; ii++) {
+		onclick[plugin.stepNames[ii]] = 
+			(function() {
+				var index = ii;
+				var handler = function(e) {
+					plugin.step(new Wizard(resolveTarget(e)), index);
+					return false;
+				};
+				return handler;})();
+	}
+	var getButtons = function(index) {
+		var buttons = [];
+		for (var ii= 0; ii&lt;plugin.stepNames.length; ii++) {
+			if (ii !== index) {
+				var name = plugin.stepNames[ii];
+				buttons.push({
+					onClick: onclick[name],
+					caption: lingo[name+&quot;StepButton&quot;],
+					tooltip: lingo[name+&quot;StepButtonTooltip&quot;]
+				});
+			}
+		}
+		return buttons;
+	};
+	return getButtons;
+})();
+plugin.step = function(wizard, stepIndex, extraParams)
+{
+	var name = plugin.stepNames[stepIndex];
+	var stepResult = {};
+	wizard.addStep(lingo[name+&quot;StepTitle&quot;],lingo[name+&quot;StepHtml&quot;]);
+	wizard.setButtons(plugin.buttons(stepIndex));
+	if (plugin[name+&quot;StepProcess&quot;]) {
+		plugin[name+&quot;StepProcess&quot;](wizard, extraParams);
+	}
+};
+plugin.getMarkedDiv = function(wizard)
+{
+	var mark = wizard.getElement(&quot;mark&quot;);
+	var div = document.createElement(&quot;div&quot;);
+	mark.parentNode.insertBefore(div,mark);
+	return div;
+};
+plugin.learnStepProcess = function(wizard)
+{
+	var src = config.optionsDesc.txtPrivWizardDefaultStep + &quot;: &lt;&lt;option txtPrivWizardDefaultStep&gt;&gt;&quot;;
+	wikify(src, plugin.getMarkedDiv(wizard));
+}
+plugin.grantStepProcess = function(wizard)
+{
+	wizard.getElement(&quot;btnGrant&quot;).onclick = plugin.btnSetPrivileges;
+	wizard.getElement(&quot;txtUrl&quot;).value = plugin.lastUrl;
+};
+plugin.viewStepProcess = function(wizard, extraParams)
+{
+	var listWrapper = plugin.getMarkedDiv(wizard);
+	listWrapper.innerHTML = lingo.viewStepEmptyMsg;
+
+	var html = [];
+	try {
+		if (!extraParams || extraParams.reqAcccess) {
+			netscape.security.PrivilegeManager.enablePrivilege(plugin.privAccessCapabilities);
+		}
+
+		var thisUrl = document.location.toString();
+		var privs = plugin.getPrivilegedUrls(false);
+		var listItems = [];
+		for (var handle in privs) {
+			if (privs.hasOwnProperty(handle)) {
+				var priv = privs[handle];
+				if ((priv.url === &quot;file://&quot;) ||
+					(priv.url.indexOf(&quot; &quot;) !== -1)) {
+					priv.warning = true;
+					priv.notes = (priv.url === &quot;file://&quot;)? lingo.noteDangerous:lingo.noteNoEffect;
+				} else if ((priv.url === thisUrl) || 
+				           (priv.url === plugin.lastUrl)) {
+					priv.highlight = true;
+					priv.notes = (priv.url === thisUrl)? lingo.noteThisUrl:lingo.noteTheUrlYouUpdated;
+				} 
+				listItems.push(priv);
+			}
+		}
+		var sortFunc = function(a,b) {
+			if(a.url &gt; b.url) {return 1;}
+			if(a.url &lt; b.url) {return -1;}
+			return 0;
+		};
+		listItems.sort(sortFunc);
+		listWrapper.innerHTML = &quot;&quot;;
+		var listView = ListView.create(listWrapper, listItems, lingo.listViewTemplate);
+		wizard.setValue(&quot;listView&quot;,listView);
+
+		createTiddlyButton(listWrapper, lingo.listResetButton, &quot;&quot;, plugin.btnResetPrivileges);
+	} catch (ex) {
+		listWrapper.innerHTML = &quot;Error: &quot; + ex;
+	}
+};
+plugin.btnSetPrivileges = function(ev)
+{
+	var wizard = new Wizard(this);
+	var checkboxes = wizard.bodyElem.getElementsByTagName(&quot;input&quot;);
+	var grant = [];
+	for(var t=0; t&lt;checkboxes.length; t++) {
+		var cb = checkboxes[t];
+		if((cb.getAttribute(&quot;type&quot;) === &quot;checkbox&quot;)&amp;&amp;cb.checked) {
+			grant.push(cb.name.substring(3));
+		}
+	}
+	var url = wizard.getElement(&quot;txtUrl&quot;).value;
+	if (!url) {
+		alert(lingo.errNoUrl);
+	} else {
+		plugin.lastUrl = url;
+		var viewStepExtraParams = {reqAcccess: false};
+		var gotPrivileges = false;
+		try {
+			netscape.security.PrivilegeManager.enablePrivilege(config.macros.firefoxPrivileges.privAccessCapabilities);
+			gotPrivileges = true;
+		} catch(ex) {}
+		if (gotPrivileges) {
+			plugin.setUrlPrivilege(false, url, grant, false);
+			plugin.step(wizard, 2, viewStepExtraParams);
+		} else {
+			alert(lingo.errNotAuthorized);
+		}
+	}
+	return false;
+};
+plugin.btnResetPrivileges = function(ev)
+{
+	var wizard = new Wizard(this);
+	var listView = wizard.getValue(&quot;listView&quot;);
+	var urls = ListView.getSelectedRows(listView);
+	if(urls.length === 0) {
+		alert(config.messages.nothingSelected);
+	} else {
+		netscape.security.PrivilegeManager.enablePrivilege(config.macros.firefoxPrivileges.privAccessCapabilities);
+		for (var ii=0; ii&lt;urls.length; ii++) {
+			plugin.setUrlPrivilege(false, urls[ii], [], true);
+		}
+		plugin.step(wizard, 2, {reqAcccess: false});
+	}
+	return false;
+};
+plugin.setUrlPrivilege = function(reqAccess, url, rights, reset)
+{
+	function getFreeHandle(dict, prefix) {
+		var handle = prefix;
+		var ii = 0;
+		while(&quot;undefined&quot; !== typeof(dict[handle])) {
+			ii++;
+			handle = prefix + ii;
+		}
+		return handle;
+	}
+	if (reqAccess) {
+		netscape.security.PrivilegeManager.enablePrivilege(plugin.privAccessCapabilities);
+	}
+	var isUpdate = true;
+	var urlHandle = &quot;&quot;;
+	var urls = plugin.getPrivilegedUrls(false);
+	for (var handle in urls) {
+		if (urls[handle].url === url) {
+			urlHandle = handle;
+			break;
+		}
+	}
+	var denied = [];
+	var granted = [];
+	if (urlHandle) {
+		if (!reset) {
+			displayMessage(lingo.msgUpdating.format([url]), url);
+			denied = urls[urlHandle].denied.slice();
+			granted = urls[urlHandle].granted.slice();
+		} else {
+			displayMessage(lingo.msgResetting.format([url]), url);
+		}
+	} else {
+		displayMessage(lingo.msgSetting.format([url]), url);
+		urlHandle = getFreeHandle(urls, &quot;FirefoxPrivilegesPlugin&quot;);
+		isUpdate = false;
+	}
+	for (var ii=0; ii&lt;rights.length; ii++) {
+		denied.remove(rights[ii]);
+		granted.pushUnique(rights[ii]);
+	}
+	var prefs = plugin.getPrefsBranch();
+	var idStr = urlHandle + &quot;.id&quot;;
+	var deniedStr = urlHandle + &quot;.denied&quot;;
+	var grantedStr = urlHandle + &quot;.granted&quot;;
+	function clearPref(str) {
+		if (prefs.prefHasUserValue(str)) {
+			prefs.clearUserPref(str);
+		}
+	}
+	function setOrClearPref(str, val) {
+		if (val.length) {
+			val = (&quot;string&quot; === typeof(val))? val : val.join(&quot; &quot;);
+			prefs.setCharPref(str, val);
+			// why oh why?!
+			if (!prefs.prefHasUserValue(str)) {
+				prefs.setCharPref(str, val);
+			}
+		} else {
+			clearPref(str);
+		}
+	}
+	if (!denied.length &amp;&amp; !granted.length) {
+		prefs.deleteBranch(urlHandle + &quot;.&quot;);
+	} else {
+		setOrClearPref(idStr, url);
+		setOrClearPref(deniedStr, denied);
+		setOrClearPref(grantedStr , granted);
+		setOrClearPref(idStr, url);
+	}
+	var prefService = plugin.getPrefsService();
+	prefService.savePrefFile(null);
+
+	return !isUpdate;
+};
+plugin.getPrivilegedUrls = function(reqAccess)
+{
+	function Privileged(url, granted, denied, handle) {
+		this.url = url;
+		this.granted = granted;
+		this.denied = denied;
+		this.handle = handle;
+	}
+	function getPermissions(branch, handle, type) {
+		var permissions = [];
+		var pref = handle + &quot;.&quot; + type;
+		if (branch.prefHasUserValue(pref)) {
+			permissions = branch.getCharPref(pref).split(/\s+/);
+			permissions.sort();
+		}
+		return permissions;
+	}
+	var privileged = {};
+	if (reqAccess) {
+		netscape.security.PrivilegeManager.enablePrivilege(plugin.privAccessCapabilities);
+	}
+	var prefs = plugin.getPrefsBranch(); 
+	var capsEntries = prefs.getChildList(&quot;&quot;, { value: 0 }); 
+
+	for (var ii=0; ii &lt; capsEntries.length; ii++) 
+	{ 
+		var matches = capsEntries[ii].match(/([^\.]*)[\.]id/); 
+		if (matches &amp;&amp; (2 === matches.length)) 
+		{ 
+			var handle = matches[1];
+			var url = prefs.prefHasUserValue(capsEntries[ii])? prefs.getCharPref(capsEntries[ii]) : &quot;Error getting &quot; + capsEntries[ii]; 
+			var granted = getPermissions(prefs, handle, &quot;granted&quot;);
+			var denied = getPermissions(prefs, handle, &quot;denied&quot;);
+			privileged[handle] = new Privileged(url, granted, denied, handle);
+		}
+	}
+	return privileged;
+};
+plugin.getPrefsService = function()
+{
+	return Components.classes[&quot;@mozilla.org/preferences-service;1&quot;].getService(Components.interfaces.nsIPrefService);
+};
+plugin.getPrefsBranch = function()
+{
+	var prefsService = plugin.getPrefsService();
+	return prefsService.getBranch(&quot;capability.principal.codebase.&quot;); 
+};
+/*
+//}}}
+!!! Bookmarklet interface
+//{{{
+*/
+plugin.onload = function()
+{
+	var b=backstage;
+	var bt=createTiddlyButton(b.toolbar, &quot;security&quot;+glyph(&quot;downTriangle&quot;), &quot;&quot;, b.onClickTab,&quot;backstageTab&quot;);
+	var fp=&quot;firefoxPrivileges&quot;;
+	bt.setAttribute(&quot;task&quot;,fp);
+	b.switchTab(fp);
+};
+/*
+//}}}
+!!! ListView tweak for long urls. http://trac.tiddlywiki.org/ticket/570
+//{{{
+*/
+ListView.columnTypes.LongLink = {
+	createHeader: ListView.columnTypes.String.createHeader,
+	createItem: function(place,listObject,field,columnTemplate,col,row)
+		{
+			var v = listObject[field];
+			var c = columnTemplate.text;
+			if(v != undefined) {
+				var link = createExternalLink(place,v);
+				if(!c) {
+					c = v.replace(/#|\.|\/|(\%..)|\?|\&amp;/g, config.browser.isIE? &quot;$&amp;&lt;wbr&gt;&quot;: &quot;$&amp;&amp;#8203;&quot;);
+					link.innerHTML = c;
+				} else {
+					createTiddlyText(link, c);
+				}
+			}
+		}
+};
+
+
+})();	// scope hiding
+
+} // endif(window.Components)
+//}}}</pre>
+</div>
 <div title="HideWhenPlugin" modifier="MPTW" created="201004041418" modified="201009151231" tags="systemConfig">
 <pre>/***
 |Name:|HideWhenPlugin|
@@ -1194,7 +1618,7 @@ merge(config.macros,{
 
 </pre>
 </div>
-<div title="InstantTimestampPlugin" modifier="MPTW" created="201004041418" modified="201009151231" tags="systemConfig">
+<div title="InstantTimestampPlugin" modifier="RobinDeits" created="201004041418" modified="201201300633" tags="systemConfig" changecount="1">
 <pre>/***
 |Name:|InstantTimestampPlugin|
 |Description:|A handy way to insert timestamps in your tiddler content|
@@ -1220,8 +1644,8 @@ If you enter {ts} in your tiddler content (without the spaces) it will be replac
 config.InstantTimestamp = {
 
 	// adjust to suit
-	timeFormat: 'DD/0MM/YY 0hh:0mm',
-	dateFormat: 'DD/0MM/YY',
+	timeFormat: '0MM/0DD 0hh:0mm',
+	dateFormat: 'YYYY-0MM-0DD',
 
 	translations: [
 		[/^!ts?$/img,  &quot;'!!{{ts{'+now.formatString(config.InstantTimestamp.timeFormat)+'}}}'&quot;],
@@ -1386,8 +1810,10 @@ window.getBackupPath = function(localPath) {
 <pre>MPTW is a distribution or edition of TiddlyWiki that includes a standard TiddlyWiki core packaged with some plugins designed to improve usability and provide a better way to organise your information. For more information see http://mptw.tiddlyspot.com/.
 </pre>
 </div>
-<div title="MainMenu" modifier="RobinDeits" created="201012042255" modified="201012052145" changecount="3">
-<pre>[[Journals|journal]] [[Setup]]</pre>
+<div title="MainMenu" modifier="RobinDeits" created="201012042255" modified="201205170159" changecount="6">
+<pre>[[Status]]
+[[Journals|journal]] 
+[[Firefox Privileges]]</pre>
 </div>
 <div title="MptwBlack" modifier="MPTW" created="201004041423" modified="201009151231" tags="systemPalette">
 <pre>Name: MptwBlack
@@ -1710,7 +2136,7 @@ http://mptw.tiddlyspot.com/#MptwTheme ($Rev: 1829 $)
 	&lt;span macro=&quot;showWhen tiddler.tags.contains('css') || tiddler.title == 'StyleSheet'&quot;&gt;&lt;span macro=&quot;refreshAll&quot;&gt;&lt;/span&gt;&lt;/span&gt;
 	&lt;span style=&quot;padding:1em;&quot;&gt;&lt;/span&gt;
 	&lt;span macro='toolbar closeTiddler closeOthers +editTiddler deleteTiddler &gt; fields syncing permalink references jump'&gt;&lt;/span&gt; &lt;span macro='newHere label:&quot;new here&quot;'&gt;&lt;/span&gt;
-	&lt;span macro='newJournalHere {{config.mptwJournalFormat?config.mptwJournalFormat:&quot;YYYY-0MM-0DD&quot;}}'&gt;&lt;/span&gt;
+	&lt;span macro='newJournalHere {{config.mptwJournalFormat?config.mptwJournalFormat:&quot;YYYY-0MM-0DD&quot;}} label:&quot;new journal here&quot;'&gt;&lt;/span&gt;
 	&lt;!--span macro='mptwCollapse -'&gt;&lt;/span--&gt;
 &lt;/div&gt;
 &lt;!--}}}--&gt;
@@ -1949,7 +2375,7 @@ h1,h2,h3,h4,h5,h6 {
 URL: http://mptw.tiddlyspot.com/upgrade.html
 </pre>
 </div>
-<div title="MptwUserConfigPlugin" modifier="RobinDeits" created="201004041418" modified="201012052253" tags="systemConfig" changecount="9">
+<div title="MptwUserConfigPlugin" modifier="RobinDeits" created="201004041418" modified="201201042140" tags="systemConfig" changecount="10">
 <pre>/***
 |Description:|A place to put your config tweaks so they aren't overwritten when you upgrade MPTW|
 See http://www.tiddlywiki.org/wiki/Configuration_Options for other options you can set. In some cases where there are clashes with other plugins it might help to rename this to zzMptwUserConfigPlugin so it gets executed last.
@@ -1962,7 +2388,7 @@ config.mptwJournalFormat = 'YYYY-0MM-0DD';
 
 
 // example: set the theme you want to start with
-config.options.txtTheme = 'MptwRoundTheme';
+config.options.txtTheme = 'MptwStandardTheme';
 
 config.options.chkSaveBackups = false;
 config.options.chkAutoSave = true;
@@ -2721,21 +3147,19 @@ config.macros.refreshAll = { handler: function(place,macroName,params,wikifier,p
 
 </pre>
 </div>
-<div title="Setup" modifier="RobinDeits" created="201012042356" changecount="1">
-<pre>&lt;html&gt;
-&lt;a class='button' href='javascript:void(eval(decodeURIComponent(&quot;(function()%250A%257B%250Avar%2520script%253Ddocument.createElement(%2522script%2522)%253B%250Ascript.src%253D%2522http%253A%252F%252Ftrac.tiddlywiki.org%252Fbrowser%252FTrunk%252Fcontributors%252FXavierVerges%252Fplugins%252FFirefoxPrivilegesPlugin.js%253Fformat%253Draw%2522%253B%250Ascript.onload%253Dfunction()%257Bvar%2520b%253Dbackstage%253B%2520var%2520fp%253D%2522firefoxPrivileges%2522%253B%250Avar%2520bt%253DcreateTiddlyButton(b.toolbar%252C%2522security%2522%252Bglyph(%2522downTriangle%2522)%252C%2522%2522%252Cb.onClickTab%252C%2522backstageTab%2522)%253B%250Abt.setAttribute(%2522task%2522%252Cfp)%253Bb.switchTab(fp)%253B%257D%253B%250Adocument.getElementsByTagName(%2522head%2522)%255B0%255D.appendChild(script)%253B%250A%257D)()&quot;)))'&gt;
-Load the FirefoxPrivileges from tiddywiki.org&lt;/a&gt;
-&lt;/html&gt;</pre>
-</div>
 <div title="SiteSubtitle" modifier="RobinDeits" created="201012042256" modified="201012052146" changecount="2">
 <pre></pre>
 </div>
 <div title="SiteTitle" modifier="RobinDeits" created="201012042256" modified="201106270304" changecount="3">
 <pre>Project Journal</pre>
 </div>
-<div title="StyleSheet" modifier="RobinDeits" created="201108111746" changecount="1">
+<div title="Status" modifier="RobinDeits" created="201201042141" changecount="1">
+<pre></pre>
+</div>
+<div title="StyleSheet" modifier="RobinDeits" created="201108111746" modified="201201051934" changecount="2">
 <pre>.shrink img { width:50% } 
 .stretch img { width:100%; } 
+.thumb img { height:200px; }
 </pre>
 </div>
 <div title="TabAllTags" modifier="MPTW" created="201004041418" modified="201009151231">
@@ -3535,7 +3959,7 @@ merge(config.macros,{
 
 </pre>
 </div>
-<div title="journal" modifier="RobinDeits" created="201110310420" changecount="1">
+<div title="journal" modifier="RobinDeits" created="201110310420" modified="201201042141" changecount="2">
 <pre></pre>
 </div>
 <div title="systemConfig" modifier="RobinDeits" created="201009151231" modified="201012042301" taggly.excerpts="descr" taggly.sortby="created" taggly.sortorder="desc" changecount="2">
